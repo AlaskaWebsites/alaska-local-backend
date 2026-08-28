@@ -32,6 +32,8 @@ export interface TenantProps {
   slug: string
   name: string
   description?: string
+  logo?: string
+  banner?: string
   phoneWhatsApp: string
   address?: string
   businessCategory: BusinessCategory
@@ -41,6 +43,8 @@ export interface TenantProps {
   customDomain?: string
   deliveryFeeCents?: number
   minOrderValueCents?: number
+  categories?: unknown[]
+  reviews?: unknown
   isActive?: boolean
   createdAt?: Date
   updatedAt?: Date
@@ -59,6 +63,7 @@ export class Tenant {
       theme: props.theme || 'food',
       deliveryFeeCents: props.deliveryFeeCents || 0,
       minOrderValueCents: props.minOrderValueCents || 0,
+      categories: props.categories || [],
       isActive: props.isActive ?? true,
       createdAt: props.createdAt || new Date(),
       updatedAt: props.updatedAt || new Date()
@@ -81,6 +86,8 @@ export class Tenant {
   get slug(): string { return this.props.slug }
   get name(): string { return this.props.name }
   get description(): string | undefined { return this.props.description }
+  get logo(): string | undefined { return this.props.logo }
+  get banner(): string | undefined { return this.props.banner }
   get phoneWhatsApp(): string { return this.props.phoneWhatsApp }
   get address(): string | undefined { return this.props.address }
   get businessCategory(): BusinessCategory { return this.props.businessCategory }
@@ -90,6 +97,8 @@ export class Tenant {
   get customDomain(): string | undefined { return this.props.customDomain }
   get deliveryFeeCents(): number { return this.props.deliveryFeeCents || 0 }
   get minOrderValueCents(): number { return this.props.minOrderValueCents || 0 }
+  get categories(): unknown[] { return this.props.categories || [] }
+  get reviews(): unknown | undefined { return this.props.reviews }
   get isActive(): boolean { return this.props.isActive ?? true }
   get createdAt(): Date { return this.props.createdAt || new Date() }
   get updatedAt(): Date { return this.props.updatedAt || new Date() }
