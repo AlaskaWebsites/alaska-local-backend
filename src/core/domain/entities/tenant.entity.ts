@@ -1,7 +1,18 @@
 import { ValidationError } from '../errors/domain.error'
 
 export type BusinessCategory = 'menu' | 'shop' | 'hub' | 'pro'
-export type TenantTheme = 'food' | 'barber' | 'health' | 'drinks' | 'default'
+export type TenantTheme =
+  | 'food'
+  | 'barber'
+  | 'health'
+  | 'drinks'
+  | 'rose'
+  | 'amber'
+  | 'violet'
+  | 'blue'
+  | 'emerald'
+  | 'slate'
+  | 'default'
 
 export interface OpeningHours {
   open: string  // HH:mm
