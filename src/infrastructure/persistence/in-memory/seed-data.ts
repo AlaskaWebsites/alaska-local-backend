@@ -111,5 +111,77 @@ export const SEED_TENANTS: Tenant[] = [
       city: 'SAO PAULO'
     },
     customDomain: 'belladonna.com.br'
+  }),
+  new Tenant({
+    id: 'ten-cafe-central',
+    slug: 'cafe-central',
+    name: 'Café Central & Bistrô',
+    description: 'O melhor café especial da cidade, ambiente acolhedor, brunch e doces artesanais.',
+    phoneWhatsApp: '11988887777',
+    address: 'Rua do Café, 123 - Centro',
+    businessCategory: 'menu',
+    theme: 'food',
+    openingHours: { open: '07:00', close: '20:00' },
+    pixConfig: {
+      key: '11988887777',
+      keyType: 'phone',
+      beneficiary: 'Café Central',
+      city: 'SAO PAULO'
+    },
+    customDomain: 'cafecentral.com.br'
+  }),
+  new Tenant({
+    id: 'ten-espetaria-brasa',
+    slug: 'espetaria-brasa',
+    name: 'Espetaria & Jantinha Brasa Nobre',
+    description: 'Espetinhos artesanais na brasa, jantinhas completas, acompanhamentos caseiros e cervejas estupidamente geladas.',
+    phoneWhatsApp: '11999999999',
+    address: 'Av. dos Churrasqueiros, 450 - Centro',
+    businessCategory: 'menu',
+    theme: 'food',
+    openingHours: { open: '18:00', close: '23:45' },
+    pixConfig: {
+      key: '11999999999',
+      keyType: 'phone',
+      beneficiary: 'Espetaria Brasa Nobre',
+      city: 'SAO PAULO'
+    },
+    customDomain: 'espetariabrasa.com.br'
+  }),
+  new Tenant({
+    id: 'ten-restaurante-bella-italia',
+    slug: 'restaurante-bella-italia',
+    name: 'Restaurante Bella Italia',
+    description: 'Massas artesanais frescas, risotos clássicos, vinhos italianos e gastronomia tradicional.',
+    phoneWhatsApp: '11933332222',
+    address: 'Rua das Cantinas, 300 - Bixiga',
+    businessCategory: 'menu',
+    theme: 'food',
+    openingHours: { open: '11:30', close: '23:00' },
+    pixConfig: {
+      key: '11933332222',
+      keyType: 'phone',
+      beneficiary: 'Restaurante Bella Italia',
+      city: 'SAO PAULO'
+    },
+    customDomain: 'bellaitalia.com.br'
+  }),
+  new Tenant({
+    id: 'ten-pizzaria-napolitana',
+    slug: 'pizzaria-napolitana',
+    name: 'Pizzaria Napolitana Gourmet',
+    description: 'Pizzas artesanais de longa fermentação assadas em forno a lenha, ingredientes italianos importados.',
+    phoneWhatsApp: '11987654321',
+    address: 'Rua das Pizzarias, 100 - Mooca',
+    businessCategory: 'menu',
+    theme: 'food',
+    openingHours: { open: '18:00', close: '23:30' },
+    pixConfig: {
+      key: '11987654321',
+      keyType: 'phone',
+      beneficiary: 'Pizzaria Napolitana',
+      city: 'SAO PAULO'
+    },
+    customDomain: 'pizzarianapolitana.com.br'
   })
 ]
