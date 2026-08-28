@@ -9,7 +9,7 @@ describe('Unit: ResolveTenantByDomainUseCase', () => {
   let useCase: ResolveTenantByDomainUseCase
 
   beforeEach(() => {
-    repo = new InMemoryTenantRepository()
+    repo = new InMemoryTenantRepository(false)
     useCase = new ResolveTenantByDomainUseCase(repo)
   })
 

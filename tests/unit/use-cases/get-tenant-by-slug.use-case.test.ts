@@ -9,7 +9,7 @@ describe('Unit: GetTenantBySlugUseCase', () => {
   let useCase: GetTenantBySlugUseCase
 
   beforeEach(() => {
-    repo = new InMemoryTenantRepository()
+    repo = new InMemoryTenantRepository(false)
     useCase = new GetTenantBySlugUseCase(repo)
   })
 

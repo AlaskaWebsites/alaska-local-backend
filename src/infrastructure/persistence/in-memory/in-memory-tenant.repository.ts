@@ -5,8 +5,10 @@ import { SEED_TENANTS } from './seed-data'
 export class InMemoryTenantRepository implements ITenantRepository {
   private items: Map<string, Tenant> = new Map()
 
-  constructor() {
-    this.seed()
+  constructor(autoSeed: boolean = true) {
+    if (autoSeed) {
+      this.seed()
+    }
   }
 
   private seed(): void {
@@ -20,8 +22,9 @@ export class InMemoryTenantRepository implements ITenantRepository {
   }
 
   async findBySlug(slug: string): Promise<Tenant | null> {
+    const clean = slug.toLowerCase()
     for (const tenant of this.items.values()) {
-      if (tenant.slug.toLowerCase() === slug.toLowerCase()) {
+      if (tenant.slug.toLowerCase() === clean) {
         return tenant
       }
     }
@@ -39,6 +42,12 @@ export class InMemoryTenantRepository implements ITenantRepository {
   }
 
   async save(tenant: Tenant): Promise<void> {
+    // Remove qualquer registro prévio com o mesmo slug para evitar duplicatas
+    for (const [id, existing] of this.items.entries()) {
+      if (existing.slug.toLowerCase() === tenant.slug.toLowerCase()) {
+        this.items.delete(id)
+      }
+    }
     this.items.set(tenant.id, tenant)
   }
 
