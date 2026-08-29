@@ -18,19 +18,20 @@ async function runSeed() {
 
     console.log(`🔄 Atualizando chave Pix para: ${targetPixKey} (${targetKeyType}) em todos os estabelecimentos...`)
 
+    // 1. Atualiza todos os registros existentes com a nova chave Pix usando cast explícito ::text
     await client.query(`
       UPDATE tenants 
       SET pix_config = jsonb_build_object(
-        'key', $1,
-        'keyType', $2,
+        'key', $1::text,
+        'keyType', $2::text,
         'beneficiary', name,
-        'city', 'SAO PAULO',
+        'city', 'SAO PAULO'::text,
         'allowTestCent', true,
         'depositPercentage', 30
       );
     `, [targetPixKey, targetKeyType])
 
-    // Atualiza especificamente os principais estabelecimentos com seus beneficiários corretos
+    // 2. Garante o upsert dos principais estabelecimentos com dados completos
     await client.query(`
       INSERT INTO tenants (id, slug, name, description, phone_whatsapp, address, business_category, theme, custom_domain, opening_hours, pix_config, delivery_fee_cents, min_order_value_cents)
       VALUES 
