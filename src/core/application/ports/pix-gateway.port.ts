@@ -8,4 +8,5 @@ export interface GeneratePixBrCodeInput {
 
 export interface IPixGateway {
   generateBrCode(input: GeneratePixBrCodeInput): string
+  generateQrCodeDataUrl(payload: string): Promise<string>
 }

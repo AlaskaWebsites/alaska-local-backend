@@ -1,4 +1,5 @@
 import { IPixGateway, GeneratePixBrCodeInput } from '@core/application/ports/pix-gateway.port'
+import * as QRCode from 'qrcode'
 
 export class LocalPixGateway implements IPixGateway {
   generateBrCode(input: GeneratePixBrCodeInput): string {
@@ -27,6 +28,22 @@ export class LocalPixGateway implements IPixGateway {
     const raw = `${tag00}${tag26}${tag52}${tag53}${tag54}${tag58}${tag59}${tag60}${tag62}6304`
     const crc = this.crc16(raw)
     return `${raw}${crc}`
+  }
+
+  async generateQrCodeDataUrl(payload: string): Promise<string> {
+    try {
+      return await QRCode.toDataURL(payload, {
+        margin: 1,
+        width: 320,
+        errorCorrectionLevel: 'M',
+        color: {
+          dark: '#0f172a',
+          light: '#ffffff'
+        }
+      })
+    } catch {
+      return ''
+    }
   }
 
   private sanitize(text: string, maxLen: number): string {

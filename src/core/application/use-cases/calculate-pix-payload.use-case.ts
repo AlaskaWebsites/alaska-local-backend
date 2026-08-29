@@ -15,6 +15,7 @@ export interface CalculatePixPayloadOutput {
   beneficiary: string
   amount: number
   copiaECola: string
+  qrCodeDataUrl: string
   isTestMode: boolean
 }
 
@@ -48,12 +49,15 @@ export class CalculatePixPayloadUseCase {
       txid: input.txid || 'ALASKA'
     })
 
+    const qrCodeDataUrl = await this.pixGateway.generateQrCodeDataUrl(copiaECola)
+
     return {
       pixKey: effectiveKey,
       keyType: pixConfig?.keyType || 'phone',
       beneficiary,
       amount: effectiveAmount,
       copiaECola,
+      qrCodeDataUrl,
       isTestMode: !!input.isTestCent
     }
   }
