@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS tenants (
     address TEXT,
     business_category VARCHAR(20) NOT NULL CHECK (business_category IN ('menu', 'shop', 'hub', 'pro')),
     theme VARCHAR(30) DEFAULT 'food',
-    custom_domain VARCHAR(255) UNIQUE,
+    custom_domain VARCHAR(100) UNIQUE,
     opening_hours JSONB,
     pix_config JSONB,
     delivery_fee_cents INT DEFAULT 0,
@@ -41,10 +41,10 @@ CREATE TABLE IF NOT EXISTS products (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price_cents INT NOT NULL CHECK (price_cents >= 0),
-    image_url TEXT,
-    is_available BOOLEAN DEFAULT true,
-    option_groups JSONB DEFAULT '[]'::jsonb,
-    duration_minutes INT DEFAULT 30,
+    image TEXT,
+    available BOOLEAN DEFAULT true,
+    duration_minutes INT,
+    option_groups JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -58,13 +58,14 @@ CREATE TABLE IF NOT EXISTS orders (
     address JSONB,
     items JSONB NOT NULL,
     subtotal_cents INT NOT NULL,
-    delivery_fee_cents INT DEFAULT 0,
+    delivery_fee_cents INT NOT NULL DEFAULT 0,
     total_cents INT NOT NULL,
     payment_method VARCHAR(50) NOT NULL,
     change_for_cents INT,
     status VARCHAR(30) DEFAULT 'created',
     pix_code TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- 5. Tabela de Agendamentos (Bookings)
@@ -80,7 +81,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     booking_time VARCHAR(10) NOT NULL,
     total_price_cents INT NOT NULL,
     total_duration_minutes INT NOT NULL,
-    payment_mode VARCHAR(30) DEFAULT 'on_service',
+    payment_mode VARCHAR(30) NOT NULL,
     deposit_amount_cents INT DEFAULT 0,
     status VARCHAR(30) DEFAULT 'scheduled',
     notes TEXT,
@@ -88,19 +89,14 @@ CREATE TABLE IF NOT EXISTS bookings (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Índices de Performance Multi-Tenant
-CREATE INDEX IF NOT EXISTS idx_categories_tenant ON categories(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_products_tenant ON products(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_orders_tenant ON orders(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_bookings_tenant_date ON bookings(tenant_id, booking_date);
-
--- Habilitação de RLS (Row Level Security)
+-- HABILITAÇÃO DO ROW LEVEL SECURITY (RLS)
+ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 
--- SEED INICIAL DE DEMOSTRAÇÃO: Adega Prime 24h & Karine Finardi
+-- SEED INICIAL DE DEMOSTRAÇÃO: Adega Prime 24h, Karine Finardi & Barbearia Style
 INSERT INTO tenants (id, slug, name, description, phone_whatsapp, address, business_category, theme, custom_domain, opening_hours, pix_config, delivery_fee_cents, min_order_value_cents)
 VALUES 
 (
@@ -108,7 +104,7 @@ VALUES
   'Bebidas geladas, destilados importados, cervejas artesanais e combos com entrega expressa 24 horas.',
   '11988887777', 'Av. Paulista, 1000 - Bela Vista', 'menu', 'amber', 'adegaprime.com.br',
   '{"open": "00:00", "close": "23:59"}'::jsonb,
-  '{"key": "11988887777", "keyType": "phone", "beneficiary": "Adega Prime LTDA", "city": "SAO PAULO"}'::jsonb,
+  '{"key": "7e3ed5e6-6097-4b15-88a3-221caba64141", "keyType": "random", "beneficiary": "Adega Prime LTDA", "city": "SAO PAULO"}'::jsonb,
   700, 3000
 ),
 (
@@ -116,7 +112,7 @@ VALUES
   'Semijoias finas hipoalergênicas, banhadas a ouro 18k e prata 925 com garantia de 1 ano.',
   '11999998888', 'Francisco Morato - SP', 'shop', 'rose', 'karinefinardi.com.br',
   '{"open": "09:00", "close": "19:00"}'::jsonb,
-  '{"key": "11999998888", "keyType": "phone", "beneficiary": "Karine Finardi", "city": "FRANCISCO MORATO"}'::jsonb,
+  '{"key": "7e3ed5e6-6097-4b15-88a3-221caba64141", "keyType": "random", "beneficiary": "Karine Finardi", "city": "FRANCISCO MORATO"}'::jsonb,
   1000, 5000
 ),
 (
@@ -124,7 +120,7 @@ VALUES
   'Cortes modernos, barba na toalha quente, cerveja artesanal e ambiente climatizado.',
   '11977776666', 'Rua Augusta, 500 - Consolação', 'hub', 'violet', 'barbeariastyle.com.br',
   '{"open": "09:00", "close": "20:00"}'::jsonb,
-  '{"key": "11977776666", "keyType": "phone", "beneficiary": "Style Club Barbearia", "city": "SAO PAULO"}'::jsonb,
+  '{"key": "7e3ed5e6-6097-4b15-88a3-221caba64141", "keyType": "random", "beneficiary": "Style Club Barbearia", "city": "SAO PAULO"}'::jsonb,
   0, 0
 )
 ON CONFLICT (slug) DO NOTHING;
