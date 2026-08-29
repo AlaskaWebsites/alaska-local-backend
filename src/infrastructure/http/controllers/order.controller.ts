@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Get, Param, UsePipes } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger'
 import { CreateOrderUseCase } from '@core/application/use-cases/create-order.use-case'
 import { z } from 'zod'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe'
@@ -50,13 +50,16 @@ export class OrderController {
   ) {}
 
   @Post()
-  @ApiOperation({ summary: 'Cria um novo pedido com validação Zod, cálculo de total e suporte a Pix EMV' })
+  @ApiOperation({
+    summary: 'Cria um novo pedido para delivery ou retirada com validação Zod, cálculo monetário e suporte a Pix EMV',
+    description: 'Processa a sacola de compras, valida itens e adicionais, calcula subtotal e total com taxa de entrega e gera o payload Pix se selecionado.'
+  })
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        tenantSlug: { type: 'string', example: 'adega-prime' },
-        customerName: { type: 'string', example: 'Danilo Santos' },
+        tenantSlug: { type: 'string', example: 'hamburgueria-x' },
+        customerName: { type: 'string', example: 'Danilo Gozzi' },
         customerPhone: { type: 'string', example: '11999998888' },
         deliveryType: { type: 'string', enum: ['delivery', 'pickup'], example: 'delivery' },
         address: {
@@ -66,8 +69,6 @@ export class OrderController {
             number: { type: 'string', example: '1000' },
             neighborhood: { type: 'string', example: 'Bela Vista' },
             cep: { type: 'string', example: '01310-100' },
-            city: { type: 'string', example: 'São Paulo' },
-            state: { type: 'string', example: 'SP' },
             complement: { type: 'string', example: 'Apto 42' }
           }
         },
@@ -76,21 +77,22 @@ export class OrderController {
           items: {
             type: 'object',
             properties: {
-              productId: { type: 'string', example: 'prod-combo-gin' },
-              productName: { type: 'string', example: 'Combo Gin Tanqueray + 4 Red Bull' },
-              quantity: { type: 'number', example: 1 },
-              unitPriceCents: { type: 'number', example: 17990 },
+              productId: { type: 'string', example: 'prod-x-burger' },
+              productName: { type: 'string', example: 'X-Burger Clássico Monster' },
+              quantity: { type: 'integer', example: 2 },
+              unitPriceCents: { type: 'integer', example: 2890 },
               options: {
                 type: 'array',
                 items: {
                   type: 'object',
                   properties: {
-                    id: { type: 'string', example: 'opt-gelo' },
-                    name: { type: 'string', example: 'Saco de Gelo 5kg' },
-                    priceCents: { type: 'number', example: 1500 }
+                    id: { type: 'string', example: 'add-bacon' },
+                    name: { type: 'string', example: 'Bacon Crocante Extra' },
+                    priceCents: { type: 'integer', example: 500 }
                   }
                 }
-              }
+              },
+              observation: { type: 'string', example: 'Sem cebola, por favor' }
             }
           }
         },
@@ -100,7 +102,28 @@ export class OrderController {
       required: ['tenantSlug', 'customerName', 'customerPhone', 'deliveryType', 'items', 'paymentMethod']
     }
   })
-  @ApiResponse({ status: 201, description: 'Pedido criado com sucesso' })
+  @ApiResponse({
+    status: 201,
+    description: 'Pedido registrado com sucesso',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          id: 'ord-1724935200000',
+          tenantId: 'ten-hamburgueria-x',
+          customerName: 'Danilo Gozzi',
+          customerPhone: '11999998888',
+          deliveryType: 'delivery',
+          paymentMethod: 'Pix',
+          subtotal: 67.80,
+          total: 72.80,
+          status: 'created',
+          pixCode: '00020126580014br.gov.bcb.pix...',
+          createdAt: '2026-08-29T14:45:00.000Z'
+        }
+      }
+    }
+  })
   @ApiResponse({ status: 400, description: 'Dados de validação incorretos' })
   @ApiResponse({ status: 404, description: 'Estabelecimento não encontrado' })
   @UsePipes(new ZodValidationPipe(CreateOrderDtoSchema))
@@ -125,9 +148,33 @@ export class OrderController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Busca os detalhes de um pedido por ID' })
-  @ApiParam({ name: 'id', description: 'ID do pedido', example: 'ord-123456789' })
-  @ApiResponse({ status: 200, description: 'Pedido encontrado' })
+  @ApiOperation({
+    summary: 'Busca os detalhes de um pedido por ID',
+    description: 'Retorna as informações completas do pedido registrado para consulta e acompanhamento.'
+  })
+  @ApiParam({ name: 'id', description: 'ID do pedido gerado', example: 'ord-1724935200000' })
+  @ApiResponse({
+    status: 200,
+    description: 'Pedido encontrado',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          id: 'ord-1724935200000',
+          tenantId: 'ten-hamburgueria-x',
+          customerName: 'Danilo Gozzi',
+          customerPhone: '11999998888',
+          deliveryType: 'delivery',
+          paymentMethod: 'Pix',
+          subtotal: 67.80,
+          total: 72.80,
+          status: 'created',
+          pixCode: '000201...',
+          createdAt: '2026-08-29T14:45:00.000Z'
+        }
+      }
+    }
+  })
   @ApiResponse({ status: 404, description: 'Pedido não encontrado' })
   async getById(@Param('id') id: string) {
     const order = await this.orderRepository.findById(id)

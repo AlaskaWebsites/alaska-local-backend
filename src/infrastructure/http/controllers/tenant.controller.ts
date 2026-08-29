@@ -20,9 +20,40 @@ export class TenantController {
   ) {}
 
   @Get('resolve')
-  @ApiOperation({ summary: 'Resolve o estabelecimento a partir do domínio próprio ou subdomínio (Host Header)' })
-  @ApiQuery({ name: 'host', description: 'Host ou domínio acessado (ex: karinefinardi.com.br ou adega-prime.alaska.app)', example: 'karinefinardi.com.br' })
-  @ApiResponse({ status: 200, description: 'Estabelecimento resolvido com sucesso' })
+  @ApiOperation({
+    summary: 'Resolve o estabelecimento a partir do domínio próprio ou subdomínio (Host Header)',
+    description: 'Permite que domínios customizados (ex: karinefinardi.com.br) ou subdomínios (adega-prime.alaska.app) identifiquem o tenant correspondente.'
+  })
+  @ApiQuery({
+    name: 'host',
+    description: 'Host ou domínio acessado no navegador',
+    example: 'karinefinardi.com.br',
+    required: true
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Estabelecimento resolvido com sucesso',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          id: 'ten-karine-finardi',
+          slug: 'karine-finardi',
+          name: 'Karine Finardi | Semijoias & Revenda',
+          phoneWhatsApp: '11999998888',
+          businessCategory: 'shop',
+          theme: 'barber',
+          pixConfig: {
+            key: '7e3ed5e6-6097-4b15-88a3-221caba64141',
+            keyType: 'random',
+            beneficiary: 'Karine Finardi Semijoias',
+            city: 'FRANCISCO MORATO'
+          }
+        },
+        meta: { isOpen: true }
+      }
+    }
+  })
   @ApiResponse({ status: 404, description: 'Estabelecimento não encontrado para o domínio informado' })
   @UsePipes(new ZodValidationPipe(ResolveDomainQuerySchema))
   async resolveByDomain(@Query() query: ResolveDomainQuery) {
@@ -35,10 +66,47 @@ export class TenantController {
   }
 
   @Get(':slug')
-  @ApiOperation({ summary: 'Busca os dados operacionais, tema e catálogo de um estabelecimento por slug' })
-  @ApiParam({ name: 'slug', description: 'Slug do tenant (ex: karine-finardi, adega-prime, barbearia-style)', example: 'karine-finardi' })
-  @ApiResponse({ status: 200, description: 'Dados do tenant e status de atendimento calculados' })
-  @ApiResponse({ status: 404, description: 'Tenant não encontrado ou inativo' })
+  @ApiOperation({
+    summary: 'Busca os dados operacionais, tema, configuração Pix e catálogo de um estabelecimento por slug',
+    description: 'Retorna os metadados do tenant, horários de atendimento, cálculo se a loja está aberta e configurações de Pix D+0.'
+  })
+  @ApiParam({
+    name: 'slug',
+    description: 'Slug único do estabelecimento (ex: adega-prime, hamburgueria-x, karine-finardi, barbearia-style, clinica-sorriso)',
+    example: 'adega-prime',
+    required: true
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Dados do tenant retornados com sucesso',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          id: 'ten-adega-prime',
+          slug: 'adega-prime',
+          name: 'Adega & Distribuidora Prime',
+          description: 'Cervejas trincando, combos de destilados, gelos de sabor e conveniência 24h.',
+          phoneWhatsApp: '11988889999',
+          businessCategory: 'menu',
+          theme: 'amber',
+          openingHours: { open: '14:00', close: '03:00' },
+          pixConfig: {
+            key: '7e3ed5e6-6097-4b15-88a3-221caba64141',
+            keyType: 'random',
+            beneficiary: 'Adega & Distribuidora Prime',
+            city: 'SAO PAULO',
+            allowTestCent: true,
+            depositPercentage: 30
+          },
+          deliveryFeeCents: 600,
+          minOrderValueCents: 2000
+        },
+        meta: { isOpen: true }
+      }
+    }
+  })
+  @ApiResponse({ status: 404, description: 'Estabelecimento não encontrado ou inativo' })
   async getBySlug(@Param('slug') slug: string) {
     const tenant = await this.getTenantBySlugUseCase.execute({ slug })
     return {
