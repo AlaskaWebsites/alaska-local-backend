@@ -4,11 +4,11 @@ export const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(3333),
   CORS_ORIGINS: z.string().default('*'),
-  DATABASE_URL: z.string().optional(),
+  DATABASE_URL: z.string().optional().default('postgres://alaska:alaskapassword@localhost:5432/alaska_local'),
   SUPABASE_URL: z.string().optional(),
   SUPABASE_KEY: z.string().optional(),
   ASAAS_API_KEY: z.string().optional(),
-  REDIS_URL: z.string().optional()
+  REDIS_URL: z.string().optional().default('redis://localhost:6379')
 })
 
 export type Env = z.infer<typeof EnvSchema>
