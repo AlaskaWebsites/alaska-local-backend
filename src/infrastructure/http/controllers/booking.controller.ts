@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Get, Param, Query, UsePipes } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger'
 import { z } from 'zod'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe'
 import { TOKENS } from '@core/application/tokens'
@@ -36,7 +36,37 @@ export class BookingController {
 
   @Post()
   @ApiOperation({ summary: 'Agenda um horário para serviços (Alaska Hub & Alaska Pro)' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        tenantId: { type: 'string', example: 'ten-barbearia-style' },
+        customerName: { type: 'string', example: 'Danilo Santos' },
+        customerPhone: { type: 'string', example: '11999998888' },
+        services: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', example: 'srv-corte' },
+              name: { type: 'string', example: 'Corte Degradê + Barboterapia' },
+              priceCents: { type: 'number', example: 7500 },
+              durationMinutes: { type: 'number', example: 50 }
+            }
+          }
+        },
+        professionalId: { type: 'string', example: 'pro-1' },
+        professionalName: { type: 'string', example: 'Mestre da Navalha' },
+        date: { type: 'string', example: '2026-08-30' },
+        time: { type: 'string', example: '15:00' },
+        notes: { type: 'string', example: 'Toalha quente extra' },
+        paymentMode: { type: 'string', enum: ['on_service', 'pix_deposit', 'pix_full'], example: 'on_service' }
+      },
+      required: ['tenantId', 'customerName', 'customerPhone', 'services', 'date', 'time']
+    }
+  })
   @ApiResponse({ status: 201, description: 'Agendamento registrado com sucesso' })
+  @ApiResponse({ status: 400, description: 'Dados de entrada inválidos' })
   @UsePipes(new ZodValidationPipe(CreateBookingDtoSchema))
   async create(@Body() dto: CreateBookingDto) {
     const booking = new Booking({
@@ -73,8 +103,9 @@ export class BookingController {
 
   @Get('tenant/:tenantId')
   @ApiOperation({ summary: 'Lista agendamentos por tenant e data para controle de agenda' })
-  @ApiParam({ name: 'tenantId', description: 'ID do tenant' })
-  @ApiQuery({ name: 'date', description: 'Data YYYY-MM-DD', example: '2026-08-29' })
+  @ApiParam({ name: 'tenantId', description: 'ID do tenant', example: 'ten-barbearia-style' })
+  @ApiQuery({ name: 'date', description: 'Data no formato YYYY-MM-DD', example: '2026-08-30' })
+  @ApiResponse({ status: 200, description: 'Lista de agendamentos retornada com sucesso' })
   async listByTenantAndDate(
     @Param('tenantId') tenantId: string,
     @Query('date') date: string

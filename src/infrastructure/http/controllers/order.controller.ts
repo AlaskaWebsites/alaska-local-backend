@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Get, Param, UsePipes } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger'
 import { CreateOrderUseCase } from '@core/application/use-cases/create-order.use-case'
 import { z } from 'zod'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe'
@@ -51,6 +51,55 @@ export class OrderController {
 
   @Post()
   @ApiOperation({ summary: 'Cria um novo pedido com validação Zod, cálculo de total e suporte a Pix EMV' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        tenantSlug: { type: 'string', example: 'adega-prime' },
+        customerName: { type: 'string', example: 'Danilo Santos' },
+        customerPhone: { type: 'string', example: '11999998888' },
+        deliveryType: { type: 'string', enum: ['delivery', 'pickup'], example: 'delivery' },
+        address: {
+          type: 'object',
+          properties: {
+            street: { type: 'string', example: 'Av. Paulista' },
+            number: { type: 'string', example: '1000' },
+            neighborhood: { type: 'string', example: 'Bela Vista' },
+            cep: { type: 'string', example: '01310-100' },
+            city: { type: 'string', example: 'São Paulo' },
+            state: { type: 'string', example: 'SP' },
+            complement: { type: 'string', example: 'Apto 42' }
+          }
+        },
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              productId: { type: 'string', example: 'prod-combo-gin' },
+              productName: { type: 'string', example: 'Combo Gin Tanqueray + 4 Red Bull' },
+              quantity: { type: 'number', example: 1 },
+              unitPriceCents: { type: 'number', example: 17990 },
+              options: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string', example: 'opt-gelo' },
+                    name: { type: 'string', example: 'Saco de Gelo 5kg' },
+                    priceCents: { type: 'number', example: 1500 }
+                  }
+                }
+              }
+            }
+          }
+        },
+        paymentMethod: { type: 'string', enum: ['Pix', 'Cartão de Crédito', 'Cartão de Débito', 'Dinheiro'], example: 'Pix' },
+        isTestCent: { type: 'boolean', example: false }
+      },
+      required: ['tenantSlug', 'customerName', 'customerPhone', 'deliveryType', 'items', 'paymentMethod']
+    }
+  })
   @ApiResponse({ status: 201, description: 'Pedido criado com sucesso' })
   @ApiResponse({ status: 400, description: 'Dados de validação incorretos' })
   @ApiResponse({ status: 404, description: 'Estabelecimento não encontrado' })
@@ -77,7 +126,7 @@ export class OrderController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Busca os detalhes de um pedido por ID' })
-  @ApiParam({ name: 'id', description: 'ID do pedido' })
+  @ApiParam({ name: 'id', description: 'ID do pedido', example: 'ord-123456789' })
   @ApiResponse({ status: 200, description: 'Pedido encontrado' })
   @ApiResponse({ status: 404, description: 'Pedido não encontrado' })
   async getById(@Param('id') id: string) {

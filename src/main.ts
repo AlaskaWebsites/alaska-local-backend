@@ -20,13 +20,15 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('🏔️ Alaska Local — API & AI Agent Engine')
     .setDescription(
-      'Documentação interativa dos endpoints do Alaska Local (Alaska Menu, Alaska Shop, Alaska Hub, Alaska Pro). ' +
-      'Desenvolvido com NestJS 11, Clean Architecture (Ports & Adapters), validação Zod e pagamentos Pix D+0.'
+      'Documentação interativa dos endpoints do Alaska Local (Alaska Menu, Alaska Shop, Alaska Hub, Alaska Pro).\n\n' +
+      'Desenvolvido com NestJS 11, Clean Architecture (Ports & Adapters), persistência PostgreSQL com RLS, validação Zod e pagamentos Pix D+0.'
     )
-    .setVersion('1.0.0')
+    .setVersion('1.1.0')
     .addTag('health', 'Verificação de integridade e uptime do serviço')
     .addTag('tenants', 'Resolução de estabelecimentos, domínios próprios e horários')
     .addTag('pix', 'Geração de BR Code EMV oficial, Copia e Cola e testes de R$ 0,01')
+    .addTag('orders', 'Criação e consulta de pedidos de compra (Delivery e Retirada)')
+    .addTag('bookings', 'Agendamento de horários para serviços e consultas (Alaska Hub & Pro)')
     .build()
 
   const document = SwaggerModule.createDocument(app, swaggerConfig)
