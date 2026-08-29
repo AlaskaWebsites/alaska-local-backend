@@ -1,7 +1,7 @@
 import { ValidationError } from '../errors/domain.error'
 
 export type BusinessCategory = 'menu' | 'shop' | 'hub' | 'pro'
-export type TenantTheme =
+export type TenantTheme = 
   | 'food'
   | 'barber'
   | 'health'
@@ -24,6 +24,7 @@ export interface PixConfig {
   keyType: 'cpf' | 'cnpj' | 'email' | 'phone' | 'random'
   beneficiary?: string
   city?: string
+  allowTestCent?: boolean
   depositPercentage?: number
 }
 
@@ -63,7 +64,6 @@ export class Tenant {
       theme: props.theme || 'food',
       deliveryFeeCents: props.deliveryFeeCents || 0,
       minOrderValueCents: props.minOrderValueCents || 0,
-      categories: props.categories || [],
       isActive: props.isActive ?? true,
       createdAt: props.createdAt || new Date(),
       updatedAt: props.updatedAt || new Date()
@@ -98,7 +98,7 @@ export class Tenant {
   get deliveryFeeCents(): number { return this.props.deliveryFeeCents || 0 }
   get minOrderValueCents(): number { return this.props.minOrderValueCents || 0 }
   get categories(): unknown[] { return this.props.categories || [] }
-  get reviews(): unknown | undefined { return this.props.reviews }
+  get reviews(): unknown { return this.props.reviews }
   get isActive(): boolean { return this.props.isActive ?? true }
   get createdAt(): Date { return this.props.createdAt || new Date() }
   get updatedAt(): Date { return this.props.updatedAt || new Date() }
