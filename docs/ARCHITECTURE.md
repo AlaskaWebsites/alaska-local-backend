@@ -1,22 +1,37 @@
-# Arquitetura Técnica Detalhada — Alaska Local Backend
+# 🏛️ Arquitetura do Sistema — Alaska Local Backend
 
-## 1. Princípios Inegociáveis da Clean Architecture
+O **Alaska Local Backend** foi projetado seguindo os princípios de **Clean Architecture (Hexagonal / Ports & Adapters)**, garantindo desacoplamento total entre o domínio e os detalhes de infraestrutura (NestJS, PostgreSQL, Redis, Swagger, Supabase).
 
-- **Core Isolado:** A pasta `src/core/` não importa nenhum módulo do NestJS (`@nestjs/common`, `@Injectable()`, `@Controller()`).
-- **Inversão de Controle:** As dependências são injetadas através de Symbols (`TENANT_REPOSITORY`, `PAYMENT_GATEWAY`) utilizando Custom Providers (`useFactory`) nos módulos do NestJS.
-- **Fail-Fast com Zod:** Nenhuma requisição entra no caso de uso sem validação estrita de schema Zod.
+---
 
-## 2. Multi-Tenancy & Segurança (PostgreSQL RLS)
+## 🗺️ Diagrama em Camadas
 
-- Toda tabela de dados operacionais (`orders`, `products`, `bookings`, `customers`) contém a coluna `tenant_id`.
-- Políticas de Row Level Security (RLS) garantem que um tenant nunca acesse dados de outro, mesmo em queries diretas.
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        INFRASTRUCTURE LAYER                            │
+│  • HTTP: Controllers (Tenant, Pix, Order, Booking), ZodValidationPipe │
+│  • Persistence: PostgresService (pg.Pool), Repositories, Mappers       │
+│  • Background: BullMQ Queues, Redis                                    │
+│  • AI & Tools: MCP Engine, OCR Multimodal                              │
+├────────────────────────────────────────────────────────────────────────┤
+│                        APPLICATION LAYER                               │
+│  • Ports: ITenantRepository, IOrderRepository, IBookingRepository      │
+│  • Use Cases: GetTenantBySlug, ResolveTenantByDomain, CreateOrder...   │
+│  • Tokens: Injeção por Symbols (TOKENS.TENANT_REPOSITORY, etc.)        │
+├────────────────────────────────────────────────────────────────────────┤
+│                          DOMAIN LAYER                                  │
+│  • Entities: Tenant, Product, Order, Booking (Entidades puras)         │
+│  • Value Objects: Money (cálculo em centavos), Address, PixKey         │
+│  • Errors: DomainError, EntityNotFoundError, ValidationError           │
+└────────────────────────────────────────────────────────────────────────┘
+```
 
-## 3. Matriz de Integrações
+---
 
-| Serviço | Função | Protocolo / Transporte |
-| :--- | :--- | :--- |
-| **Supabase / Postgres** | Armazenamento relacional e RLS | TCP / Pooler PgBouncer |
-| **Asaas API** | Cobrança Pix D+0 e Régua de Mensalidades | REST HTTPS + Webhooks Zod |
-| **BullMQ / Redis** | Filas de processamento assíncrono e retry | IORedis / In-Memory Queue |
-| **LLM Gateway (Gemini / Anthropic)** | Agentes de extração e atendimento | MCP / Structured Outputs Zod |
-| **WhatsApp Cloud API / Webhook** | Notificações e co-piloto de vendas | HTTPS Webhooks |
+## ⚙️ Fluxo de Execução com Persistência Real
+
+1. **Requisição HTTP:** O NestJS recebe a chamada no Controller e valida o payload via `ZodValidationPipe`.
+2. **Caso de Uso:** O Controller invoca o Use Case através da injeção de dependência via Symbols (`TOKENS`).
+3. **Regra de Negócio:** O Use Case consulta e manipula entidades puras de domínio (`Tenant`, `Order`, `Booking`).
+4. **Repositório PostgreSQL:** O `PostgresTenantRepository` / `PostgresOrderRepository` executa queries via `PostgresService` e converte o resultado via `Mapper`.
+5. **Resposta:** O Controller retorna o JSON padronizado com HTTP 200/201.
