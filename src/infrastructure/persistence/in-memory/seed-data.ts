@@ -81,7 +81,7 @@ export const SEED_TENANTS: Tenant[] = [
     phoneWhatsApp: '11966665555',
     address: 'Rua da Saúde, 321 - Centro',
     businessCategory: 'pro',
-    theme: 'pro',
+    theme: 'health',
     openingHours: { open: '08:00', close: '19:00' },
     pixConfig: {
       key: '7e3ed5e6-6097-4b15-88a3-221caba64141',
