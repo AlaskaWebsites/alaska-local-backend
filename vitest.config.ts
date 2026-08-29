@@ -1,29 +1,37 @@
 import { defineConfig } from 'vitest/config'
-import tsconfigPaths from 'vite-tsconfig-paths'
+import path from 'node:path'
 import swc from 'unplugin-swc'
 
 export default defineConfig({
-  plugins: [
-    tsconfigPaths(),
-    swc.vite({
-      module: { type: 'es6' },
-      jsc: {
-        target: 'es2022',
-        parser: {
-          syntax: 'typescript',
-          decorators: true,
-          dynamicImport: true
-        },
-        transform: {
-          legacyDecorator: true,
-          decoratorMetadata: true
-        }
-      }
-    })
-  ],
   test: {
     globals: true,
     environment: 'node',
-    include: ['tests/**/*.test.ts', 'src/**/*.spec.ts']
+    include: ['tests/**/*.test.ts', 'src/**/*.spec.ts', 'src/**/*.test.ts'],
+    exclude: ['node_modules/**', 'dist/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/**',
+        'dist/**',
+        '**/*.d.ts',
+        '**/*.interface.ts',
+        '**/*.module.ts',
+        'src/main.ts'
+      ]
+    }
+  },
+  plugins: [
+    swc.vite({
+      module: { type: 'es6' }
+    })
+  ],
+  resolve: {
+    alias: {
+      '@core': path.resolve(__dirname, './src/core'),
+      '@infra': path.resolve(__dirname, './src/infrastructure'),
+      '@config': path.resolve(__dirname, './src/config'),
+      '@': path.resolve(__dirname, './src')
+    }
   }
 })
